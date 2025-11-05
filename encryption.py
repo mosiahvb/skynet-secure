@@ -1,88 +1,85 @@
-# encryption.py - Handles all encryption and decryption
+"""
+Encryption module for secure telemetry data transmission.
+Uses Fernet symmetric encryption from the cryptography library.
+"""
 
 from cryptography.fernet import Fernet
-import base64
-import hashlib
-from config import ENCRYPTION_KEY
+import json
+import os
 
-class SecureChannel:
-    """
-    This class handles encryption and decryption of telemetry data.
-    
-    Think of it like a secret code machine:
-    - encrypt() turns normal text into scrambled gibberish
-    - decrypt() turns gibberish back into normal text
-    """
-    
-    def __init__(self, key):
+
+class SecureTransmission:
+    """Handles encryption and decryption of telemetry data."""
+
+    def __init__(self, key_file="secret.key"):
         """
-        Initialize the encryption machine with a secret key.
-        
+        Initialize the encryption handler.
+
         Args:
-            key: Your secret password (as bytes)
+            key_file: Path to the encryption key file
         """
-        # Convert the key to the right format for Fernet encryption
-        # SHA-256 creates a 32-byte hash from any input
-        key_bytes = hashlib.sha256(key).digest()
-        # Base64 encode it (Fernet requires this format)
-        key_base64 = base64.urlsafe_b64encode(key_bytes)
-        # Create the cipher object (our encryption machine)
-        self.cipher = Fernet(key_base64)
-    
-    def encrypt(self, data):
+        self.key_file = key_file
+        self.key = self._load_or_generate_key()
+        self.cipher = Fernet(self.key)
+
+    def _load_or_generate_key(self):
+        """Load existing key or generate a new one."""
+        if os.path.exists(self.key_file):
+            with open(self.key_file, 'rb') as f:
+                return f.read()
+        else:
+            key = Fernet.generate_key()
+            with open(self.key_file, 'wb') as f:
+                f.write(key)
+            return key
+
+    def encrypt_data(self, data: dict) -> bytes:
         """
-        Encrypt data (scramble it into secret code).
-        
+        Encrypt telemetry data.
+
         Args:
-            data: String or bytes to encrypt
-            
+            data: Dictionary containing telemetry data
+
         Returns:
-            Encrypted bytes (gibberish that only we can decrypt)
+            Encrypted data as bytes
         """
-        # If data is a string, convert it to bytes first
-        if isinstance(data, str):
-            data = data.encode('utf-8')
-        
-        # Encrypt the data
-        encrypted = self.cipher.encrypt(data)
+        json_data = json.dumps(data)
+        encrypted = self.cipher.encrypt(json_data.encode())
         return encrypted
-    
-    def decrypt(self, encrypted_data):
-        """
-        Decrypt data (unscramble the secret code back to normal).
-        
-        Args:
-            encrypted_data: Encrypted bytes to decrypt
-            
-        Returns:
-            Decrypted string (original readable text)
-        """
-        # Decrypt the data
-        decrypted = self.cipher.decrypt(encrypted_data)
-        # Convert bytes back to string
-        return decrypted.decode('utf-8')
 
-# Test function to make sure encryption works
-if __name__ == "__main__":
-    print("Testing encryption...")
-    
-    # Create a secure channel
-    channel = SecureChannel(ENCRYPTION_KEY)
-    
-    # Test message
-    original = "Battery: 85%, Altitude: 100m"
-    print(f"Original message: {original}")
-    
-    # Encrypt it
-    encrypted = channel.encrypt(original)
-    print(f"Encrypted (scrambled): {encrypted}")
-    
-    # Decrypt it back
-    decrypted = channel.decrypt(encrypted)
-    print(f"Decrypted (unscrambled): {decrypted}")
-    
-    # Check if it matches
-    if original == decrypted:
-        print("✓ Encryption working perfectly!")
-    else:
-        print("✗ Something went wrong!")
+    def decrypt_data(self, encrypted_data: bytes) -> dict:
+        """
+        Decrypt telemetry data.
+
+        Args:
+            encrypted_data: Encrypted data as bytes
+
+        Returns:
+            Decrypted data as dictionary
+        """
+        decrypted = self.cipher.decrypt(encrypted_data)
+        return json.loads(decrypted.decode())
+
+    def encrypt_command(self, command: str) -> bytes:
+        """
+        Encrypt control commands.
+
+        Args:
+            command: Command string (e.g., 'up', 'down', 'left', 'right')
+
+        Returns:
+            Encrypted command as bytes
+        """
+        return self.cipher.encrypt(command.encode())
+
+    def decrypt_command(self, encrypted_command: bytes) -> str:
+        """
+        Decrypt control commands.
+
+        Args:
+            encrypted_command: Encrypted command as bytes
+
+        Returns:
+            Decrypted command string
+        """
+        return self.cipher.decrypt(encrypted_command).decode()

@@ -1,207 +1,219 @@
-# 🚁 Encrypted Telemetry Dashboard
+# 🚁 Secure Drone Telemetry Dashboard
 
-A beginner-friendly Python project that simulates a drone sending encrypted telemetry data to a dashboard with live visualizations.
+An interactive drone pilot simulator demonstrating secure network telemetry in real-time using Python, FastAPI, and WebSockets. This project showcases encrypted bidirectional communication between a simulated drone and a web-based control dashboard.
 
-## 🎯 What This Project Does
+## 🎯 Features
 
-This project creates a complete encrypted communication system between a simulated drone and a dashboard:
-- **Drone Simulator**: Generates fake sensor data (GPS, altitude, speed, battery)
-- **Encryption Layer**: Secures all data with AES-256 encryption
-- **Dashboard**: Displays live graphs and maps of the telemetry data
+- **Real-time Telemetry Transmission**: Live drone data streaming with sub-second latency
+- **End-to-End Encryption**: All telemetry data and control commands are encrypted using Fernet symmetric encryption
+- **Interactive 2D Visualization**: Visual representation of drone position on a 100x100 grid
+- **Keyboard Controls**: Control the drone using arrow keys (Up, Down, Left, Right)
+- **Live Data Display**: Real-time display of speed, battery level, altitude, heading, and GPS coordinates
+- **Battery Simulation**: Realistic battery drain with recharge capability
+- **WebSocket Communication**: Efficient bidirectional communication between drone and dashboard
 
-## 🛠️ Installation
+## 🏗️ Architecture
 
-### 1. Install Python
-Make sure you have Python 3.8 or newer installed:
-```bash
-python --version
-```
+### Components
 
-### 2. Install Required Libraries
-Open your terminal and run:
-```bash
-pip install cryptography matplotlib numpy
-```
+1. **Encryption Module** (`encryption.py`)
+   - Handles symmetric encryption/decryption using Fernet
+   - Manages encryption keys
+   - Secures both telemetry data and control commands
 
-### 3. Download the Project Files
-Make sure you have all these files in the same folder:
-- `config.py`
-- `encryption.py`
-- `drone_simulator.py`
-- `dashboard.py`
-- `README.md` (this file)
+2. **Drone Simulator** (`drone_simulator.py`)
+   - Simulates drone telemetry (position, speed, battery, altitude, heading)
+   - Processes control commands and updates drone state
+   - Encrypts telemetry before transmission
+   - Maintains WebSocket connection to dashboard
 
-## 🚀 How to Run
+3. **FastAPI Dashboard** (`dashboard.py`)
+   - Serves web interface
+   - Manages WebSocket connections from drone and web clients
+   - Decrypts incoming telemetry
+   - Encrypts and forwards control commands to drone
 
-You'll need **TWO terminal windows** open:
+4. **Web Interface** (`static/index.html`)
+   - Real-time 2D visualization of drone position
+   - Live telemetry display panel
+   - Keyboard input capture for drone control
+   - Responsive design with gradient styling
 
-### Terminal 1 - Start the Dashboard First
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Python 3.8 or higher
+- pip (Python package manager)
+
+### Installation
+
+1. **Clone or navigate to the project directory**:
+   ```bash
+   cd telemetry_dashboard
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+### Running the Application
+
+You need to run two separate processes:
+
+#### Terminal 1: Start the Dashboard Server
+
 ```bash
 python dashboard.py
 ```
-You should see:
-```
-====================================================
-ENCRYPTED TELEMETRY - DASHBOARD
-====================================================
 
-📊 Dashboard initialized
-👂 Listening on localhost:5000...
-✓ Dashboard ready! Waiting for drone to connect...
-```
+The dashboard will start on `http://localhost:8000`
 
-### Terminal 2 - Start the Drone Simulator
+#### Terminal 2: Start the Drone Simulator
+
 ```bash
 python drone_simulator.py
 ```
-You should see:
+
+The drone simulator will connect to the dashboard automatically.
+
+#### Access the Dashboard
+
+Open your web browser and navigate to:
 ```
-====================================================
-ENCRYPTED TELEMETRY - DRONE SIMULATOR
-====================================================
-
-🚁 Drone Simulator initialized
-   Starting position: 34.0522, -118.2437
-   Battery: 100%
-
-🔌 Connecting to dashboard at localhost:5000...
-✓ Connected to dashboard!
-
-🚁 Starting flight simulation...
-   (Press Ctrl+C to stop)
+http://localhost:8000
 ```
 
-A window will pop up showing live graphs!
+## 🎮 Controls
 
-## 📊 What You'll See
+Once both the dashboard and drone simulator are running:
 
-The dashboard displays four panels:
+- **↑ (Up Arrow)**: Move drone north (increase latitude)
+- **↓ (Down Arrow)**: Move drone south (decrease latitude)
+- **← (Left Arrow)**: Move drone west (decrease longitude)
+- **→ (Right Arrow)**: Move drone east (increase longitude)
+- **R**: Recharge battery to 100%
 
-1. **Flight Path Map** (Top Left): Shows the drone's circular patrol route
-2. **Altitude Graph** (Top Right): Shows altitude changing over time
-3. **Speed Graph** (Bottom Left): Shows speed variations
-4. **Battery Gauge** (Bottom Right): Shows remaining battery with status
+## 📊 Dashboard Features
 
-## 🔧 Troubleshooting
+### Telemetry Display
 
-### "Port already in use" Error
-- Close any other programs using port 5000
-- Or change `PORT` in `config.py` to a different number
+The dashboard shows the following real-time information:
 
-### "Connection refused" Error
-- Make sure you start `dashboard.py` BEFORE `drone_simulator.py`
+- **Status**: Current drone operational status
+- **Position**: GPS coordinates (latitude, longitude)
+- **Speed**: Current speed in meters per second
+- **Altitude**: Height above ground in meters
+- **Heading**: Direction in degrees (0° = North, 90° = East, 180° = South, 270° = West)
+- **Battery Level**: Visual battery indicator with percentage
 
-### "Module not found" Error
-- Install the missing library: `pip install <library-name>`
+### Visual Elements
 
-### No graph appears
-- Make sure matplotlib is installed: `pip install matplotlib`
+- **2D Grid**: 10x10 grid representing the flight area (0-100 coordinates)
+- **Drone Icon**: Green circle (active) or red circle (low battery)
+- **Direction Indicator**: Triangle pointing in the drone's heading direction
+- **Trail Effect**: Visual trail showing recent movement path
+- **Position Label**: Coordinates displayed next to drone
 
-## 🎓 How It Works
+## 🔒 Security Features
 
-### The Journey of Data (Step-by-Step):
+### Encryption
 
-1. **Drone generates data**: Simulates GPS, altitude, speed, battery readings
-2. **Data converted to JSON**: Formats data into text: `{"altitude": 65, "speed": 14.5, ...}`
-3. **Encryption applied**: Scrambles JSON into encrypted bytes using AES-256
-4. **Data transmitted**: Sends encrypted data over network socket
-5. **Dashboard receives**: Gets encrypted data from network
-6. **Decryption**: Unscrambles data back to readable JSON
-7. **Visualization**: Updates all graphs with new data
+All data transmission between the drone and dashboard is encrypted using **Fernet symmetric encryption**:
 
-### Security Features:
+- **Telemetry Data**: Encrypted before transmission from drone
+- **Control Commands**: Encrypted before transmission to drone
+- **Key Management**: Automatic key generation and persistence
+- **Shared Secret**: Both drone and dashboard use the same encryption key stored in `secret.key`
 
-- **AES-256 Encryption**: Military-grade encryption algorithm
-- **Fernet Implementation**: Uses the cryptography library's Fernet symmetric encryption
-- **Secret Key**: Both drone and dashboard use the same key to encrypt/decrypt
+### Data Flow
 
-## 🔐 Understanding the Code
+1. Drone encrypts telemetry → Sends to dashboard
+2. Dashboard decrypts telemetry → Displays to user
+3. User sends command → Dashboard encrypts command
+4. Encrypted command sent to drone → Drone decrypts and executes
 
-### `config.py`
-Settings for the entire project. Change these to customize behavior:
-- `HOST` and `PORT`: Network address
-- `ENCRYPTION_KEY`: Secret password (16 bytes)
-- `UPDATE_INTERVAL`: How often to send data (seconds)
+## 📁 Project Structure
 
-### `encryption.py`
-The `SecureChannel` class handles all encryption:
-- `encrypt()`: Scrambles data into secret code
-- `decrypt()`: Unscrambles code back to readable text
+```
+telemetry_dashboard/
+├── dashboard.py              # FastAPI server
+├── drone_simulator.py        # Drone simulation
+├── encryption.py             # Encryption module
+├── requirements.txt          # Python dependencies
+├── secret.key               # Encryption key (auto-generated)
+├── static/
+│   └── index.html           # Web interface
+└── README.md                # This file
+```
 
-### `drone_simulator.py`
-The `DroneSimulator` class simulates a flying drone:
-- `update_position()`: Calculates new position/altitude/speed
-- `get_telemetry()`: Packages all sensor data
-- `send_telemetry()`: Encrypts and sends data
+## 🛠️ Technology Stack
 
-### `dashboard.py`
-The `TelemetryDashboard` class displays data:
-- `receive_telemetry()`: Gets and decrypts incoming data
-- `update_plots()`: Refreshes all graphs
-- Runs in two threads: one for network, one for display
+- **Backend**: Python 3.8+, FastAPI
+- **WebSockets**: Real-time bidirectional communication
+- **Encryption**: Cryptography library (Fernet)
+- **Frontend**: HTML5, CSS3, JavaScript (Canvas API)
+- **Server**: Uvicorn ASGI server
 
-## 🚀 Next Steps & Improvements
+## 🧪 Testing
 
-### Easy Improvements (Week 1-2):
-- Add more sensors (temperature, wind, compass)
-- Save data to a log file
-- Add low battery warnings
-- Change dashboard colors
+### Verify Encrypted Communication
 
-### Medium Improvements (Week 3-4):
-- Add two-way communication (send commands to drone)
-- Create a web-based dashboard with Flask
-- Simulate multiple drones
-- Add message authentication codes (MAC)
+Watch the terminal output to see encrypted data transmission:
 
-### Advanced Improvements (Week 5-8):
-- Connect to a real drone (DJI Tello)
-- Implement frequency-hopping simulation
-- Add GPS spoofing detection
-- Use machine learning for anomaly detection
+**Dashboard Terminal**:
+```
+Telemetry received - Position: (52.00, 48.00), Battery: 98.5%
+Command received from client: right
+Encrypted command sent to drone: right
+```
 
-## 📚 Learning Resources
+**Drone Simulator Terminal**:
+```
+Moving RIGHT - New position: (52.00, 50.00)
+```
 
-### Python Networking:
-- [Real Python Socket Programming Guide](https://realpython.com/python-sockets/)
-- [Python Socket Documentation](https://docs.python.org/3/library/socket.html)
+### Battery Simulation
 
-### Cryptography:
-- [Cryptography.io Documentation](https://cryptography.io/)
-- [Practical Cryptography with Python](https://inventwithpython.com/cracking/)
+The battery drains at 0.05% per second. When it reaches 0%, the drone cannot move until recharged with the 'R' key.
 
-### Data Visualization:
-- [Matplotlib Tutorials](https://matplotlib.org/stable/tutorials/index.html)
-- [Python Graph Gallery](https://python-graph-gallery.com/)
+## 🎓 Educational Value
 
-## 🎯 Portfolio Tips
+This project demonstrates:
 
-To showcase this project:
+1. **Network Telemetry**: Real-time data transmission over networks
+2. **Encryption in Transit**: Securing data during transmission
+3. **WebSocket Protocol**: Bidirectional communication
+4. **Real-time Visualization**: Canvas-based graphics rendering
+5. **Event-driven Architecture**: Asynchronous programming patterns
+6. **Client-Server Architecture**: Separation of concerns
 
-1. **Create a GitHub Repository**: Upload all files with good commit messages
-2. **Record a Demo Video**: Show the system running with explanation
-3. **Write a Blog Post**: Explain what you learned and challenges faced
-4. **Take Screenshots**: Capture the dashboard with annotations
-5. **Document Improvements**: Show any enhancements you added
+## 📝 Future Enhancements
 
-## 📝 License
+Potential improvements:
 
-This is an educational project - feel free to use, modify, and learn from it!
+- [ ] Add multiple drone support
+- [ ] Implement flight path recording and replay
+- [ ] Add authentication for dashboard access
+- [ ] Include 3D visualization
+- [ ] Add obstacle detection and avoidance
+- [ ] Implement GPS waypoint navigation
+- [ ] Add telemetry data logging to database
+- [ ] Create mobile-friendly touch controls
 
-## 🙋 Questions?
+## 🤝 Contributing
 
-If something doesn't work:
-1. Check the Troubleshooting section above
-2. Make sure all libraries are installed
-3. Verify you're running dashboard.py first
-4. Check that ENCRYPTION_KEY is the same in both files
+This is a portfolio project, but suggestions and feedback are welcome!
 
-## 🌟 What's Next?
+## 📄 License
 
-Once you have this working, try:
-- Reading the "Secure Telemetry Networks" report for more project ideas
-- Building Project 2: RF Spectrum Analyzer
-- Implementing additional security features
-- Connecting to a real drone or IoT device
+This project is open source and available for educational purposes.
 
-Good luck and have fun building! 🚁✨
+## 👤 Author
+
+Created as a demonstration of secure network telemetry and real-time communication systems.
+
+---
+
+**Note**: This is a simulation for educational and demonstration purposes. The encryption implementation is suitable for learning but should be reviewed and hardened for production use.
