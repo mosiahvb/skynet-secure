@@ -13,34 +13,66 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: #fff;
+            background: linear-gradient(135deg, #343A40 0%, #212529 100%);
+            color: #F8F9FA;
             padding: 20px;
             min-height: 100vh;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
-        h1 {
+        header {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
             font-size: 2.5em;
+            margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .subtitle {
-            text-align: center;
-            margin-bottom: 30px;
             opacity: 0.9;
             font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .encryption-badge {
+            display: inline-block;
+            background: #495057;
+            border: 2px solid #6C757D;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .connection-status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .connected {
+            background: rgba(76, 175, 80, 0.3);
+            border: 2px solid #4CAF50;
+        }
+
+        .disconnected {
+            background: rgba(244, 67, 54, 0.3);
+            border: 2px solid #f44336;
         }
 
         .dashboard-grid {
             display: grid;
-            grid-template-columns: 1fr 350px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             margin-bottom: 20px;
         }
@@ -54,41 +86,41 @@
             border: 1px solid rgba(255, 255, 255, 0.18);
         }
 
-        .canvas-container {
-            position: relative;
-        }
-
-        #droneCanvas {
-            width: 100%;
-            height: 600px;
-            border-radius: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            display: block;
-        }
-
-        .telemetry-panel h2 {
+        .panel h2 {
             margin-bottom: 20px;
             font-size: 1.5em;
             border-bottom: 2px solid rgba(255, 255, 255, 0.3);
             padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .telemetry-item {
-            margin-bottom: 15px;
-            padding: 12px;
+            margin-bottom: 20px;
+            padding: 15px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 8px;
+            transition: transform 0.2s ease;
+        }
+
+        .telemetry-item:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .telemetry-label {
             font-size: 0.9em;
             opacity: 0.8;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .telemetry-value {
-            font-size: 1.3em;
+            font-size: 1.8em;
             font-weight: bold;
+            font-family: 'Courier New', monospace;
         }
 
         .status-indicator {
@@ -102,158 +134,125 @@
 
         .status-active {
             background: #4CAF50;
+            box-shadow: 0 0 10px #4CAF50;
         }
 
         .status-inactive {
             background: #f44336;
+            box-shadow: 0 0 10px #f44336;
         }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .controls-panel {
-            grid-column: 1 / -1;
-        }
-
-        .controls-panel h2 {
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-
-        .controls-info {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .control-key {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-        }
-
-        .key-icon {
-            padding: 8px 15px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-            font-weight: bold;
-            font-family: monospace;
+            50% { opacity: 0.6; }
         }
 
         .battery-bar {
             width: 100%;
-            height: 30px;
+            height: 40px;
             background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
+            border-radius: 20px;
             overflow: hidden;
-            margin-top: 8px;
             position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .battery-fill {
             height: 100%;
             background: linear-gradient(90deg, #4CAF50, #8BC34A);
-            transition: width 0.3s ease;
+            transition: width 0.5s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 0.9em;
+            font-size: 1em;
         }
 
         .battery-low {
             background: linear-gradient(90deg, #f44336, #FF5722) !important;
         }
 
-        .connection-status {
-            text-align: center;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-
-        .connected {
-            background: rgba(76, 175, 80, 0.3);
-            border: 2px solid #4CAF50;
-        }
-
-        .disconnected {
-            background: rgba(244, 67, 54, 0.3);
-            border: 2px solid #f44336;
+        .battery-medium {
+            background: linear-gradient(90deg, #FF9800, #FFC107) !important;
         }
 
         .coordinates {
-            font-family: monospace;
-            font-size: 1.1em;
+            font-family: 'Courier New', monospace;
         }
 
-        @media (max-width: 1024px) {
+        .info-section {
+            margin-top: 30px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .info-card h3 {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .info-card p {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
             .dashboard-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .telemetry-value {
+                font-size: 1.5em;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚁 Secure Drone Telemetry Dashboard</h1>
-        <p class="subtitle">Real-time encrypted network telemetry demonstration</p>
+        <header>
+            <h1>🚁 Secure Drone Telemetry Dashboard</h1>
+            <p class="subtitle">Real-time encrypted network telemetry monitoring</p>
+            <div class="encryption-badge">🔒 End-to-End Encryption Active</div>
+        </header>
 
         <div id="connectionStatus" class="connection-status disconnected">
             ⚠️ Connecting to server...
         </div>
 
         <div class="dashboard-grid">
-            <div class="panel canvas-container">
-                <canvas id="droneCanvas"></canvas>
-            </div>
-
-            <div class="panel telemetry-panel">
-                <h2>📊 Live Telemetry</h2>
-
+            <!-- Status Panel -->
+            <div class="panel">
+                <h2>📊 System Status</h2>
                 <div class="telemetry-item">
-                    <div class="telemetry-label">Status</div>
+                    <div class="telemetry-label">Drone Status</div>
                     <div class="telemetry-value">
                         <span class="status-indicator status-inactive" id="statusIndicator"></span>
                         <span id="status">Waiting...</span>
                     </div>
                 </div>
-
-                <div class="telemetry-item">
-                    <div class="telemetry-label">Position (Lat, Lon)</div>
-                    <div class="telemetry-value coordinates">
-                        <span id="latitude">--</span>, <span id="longitude">--</span>
-                    </div>
-                </div>
-
-                <div class="telemetry-item">
-                    <div class="telemetry-label">Speed</div>
-                    <div class="telemetry-value">
-                        <span id="speed">--</span> m/s
-                    </div>
-                </div>
-
-                <div class="telemetry-item">
-                    <div class="telemetry-label">Altitude</div>
-                    <div class="telemetry-value">
-                        <span id="altitude">--</span> m
-                    </div>
-                </div>
-
-                <div class="telemetry-item">
-                    <div class="telemetry-label">Heading</div>
-                    <div class="telemetry-value">
-                        <span id="heading">--</span>°
-                    </div>
-                </div>
-
                 <div class="telemetry-item">
                     <div class="telemetry-label">Battery Level</div>
                     <div class="battery-bar">
@@ -264,30 +263,81 @@
                 </div>
             </div>
 
-            <div class="panel controls-panel">
-                <h2>🎮 Controls</h2>
-                <div class="controls-info">
-                    <div class="control-key">
-                        <span class="key-icon">↑</span>
-                        <span>Move Up</span>
-                    </div>
-                    <div class="control-key">
-                        <span class="key-icon">↓</span>
-                        <span>Move Down</span>
-                    </div>
-                    <div class="control-key">
-                        <span class="key-icon">←</span>
-                        <span>Move Left</span>
-                    </div>
-                    <div class="control-key">
-                        <span class="key-icon">→</span>
-                        <span>Move Right</span>
-                    </div>
-                    <div class="control-key">
-                        <span class="key-icon">R</span>
-                        <span>Recharge Battery</span>
+            <!-- Location Panel -->
+            <div class="panel">
+                <h2>📍 Location Data</h2>
+                <div class="telemetry-item">
+                    <div class="telemetry-label">Latitude</div>
+                    <div class="telemetry-value coordinates">
+                        <span id="latitude">--</span>°
                     </div>
                 </div>
+                <div class="telemetry-item">
+                    <div class="telemetry-label">Longitude</div>
+                    <div class="telemetry-value coordinates">
+                        <span id="longitude">--</span>°
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flight Data Panel -->
+            <div class="panel">
+                <h2>✈️ Flight Data</h2>
+                <div class="telemetry-item">
+                    <div class="telemetry-label">Altitude</div>
+                    <div class="telemetry-value">
+                        <span id="altitude">--</span> <span style="font-size: 0.6em;">meters</span>
+                    </div>
+                </div>
+                <div class="telemetry-item">
+                    <div class="telemetry-label">Speed</div>
+                    <div class="telemetry-value">
+                        <span id="speed">--</span> <span style="font-size: 0.6em;">m/s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heading Panel -->
+            <div class="panel">
+                <h2>🧭 Navigation</h2>
+                <div class="telemetry-item">
+                    <div class="telemetry-label">Heading</div>
+                    <div class="telemetry-value">
+                        <span id="heading">--</span>°
+                    </div>
+                </div>
+                <div class="telemetry-item">
+                    <div class="telemetry-label">Direction</div>
+                    <div class="telemetry-value" style="font-size: 1.3em;">
+                        <span id="direction">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Info Section -->
+        <div class="panel info-section">
+            <h2>ℹ️ Session Information</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Connection Type</h3>
+                    <p>WebSocket (Encrypted)</p>
+                </div>
+                <div class="info-card">
+                    <h3>Encryption Protocol</h3>
+                    <p>Fernet (AES-128)</p>
+                </div>
+                <div class="info-card">
+                    <h3>Update Rate</h3>
+                    <p id="updateRate">-- Hz</p>
+                </div>
+                <div class="info-card">
+                    <h3>Data Packets Received</h3>
+                    <p id="packetCount">0</p>
+                </div>
+            </div>
+            <div class="timestamp">
+                Last Update: <span id="lastUpdate">Never</span>
             </div>
         </div>
     </div>
@@ -295,20 +345,8 @@
     <script>
         // WebSocket connection
         let ws = null;
-        let droneData = null;
-
-        // Canvas setup
-        const canvas = document.getElementById('droneCanvas');
-        const ctx = canvas.getContext('2d');
-
-        // Set canvas size
-        function resizeCanvas() {
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+        let packetCount = 0;
+        let lastUpdateTime = Date.now();
 
         // Connect to WebSocket
         function connect() {
@@ -320,13 +358,13 @@
             ws.onopen = () => {
                 console.log('Connected to dashboard');
                 document.getElementById('connectionStatus').className = 'connection-status connected';
-                document.getElementById('connectionStatus').innerHTML = '✅ Connected to dashboard';
+                document.getElementById('connectionStatus').innerHTML = '✅ Connected - Receiving encrypted telemetry';
             };
 
             ws.onmessage = (event) => {
-                droneData = JSON.parse(event.data);
-                updateTelemetry(droneData);
-                drawDrone(droneData);
+                const data = JSON.parse(event.data);
+                updateTelemetry(data);
+                updatePacketStats();
             };
 
             ws.onclose = () => {
@@ -343,148 +381,70 @@
 
         // Update telemetry display
         function updateTelemetry(data) {
-            document.getElementById('status').textContent = data.status;
-            document.getElementById('latitude').textContent = data.latitude.toFixed(6);
-            document.getElementById('longitude').textContent = data.longitude.toFixed(6);
-            document.getElementById('speed').textContent = data.speed.toFixed(2);
-            document.getElementById('altitude').textContent = data.altitude.toFixed(2);
-            document.getElementById('heading').textContent = data.heading.toFixed(2);
-
-            const batteryLevel = data.battery_level;
-            document.getElementById('batteryLevel').textContent = batteryLevel.toFixed(1) + '%';
-            document.getElementById('batteryFill').style.width = batteryLevel + '%';
-
-            if (batteryLevel < 20) {
-                document.getElementById('batteryFill').classList.add('battery-low');
-            } else {
-                document.getElementById('batteryFill').classList.remove('battery-low');
-            }
-
+            // Status
+            document.getElementById('status').textContent = data.status.toUpperCase();
             const statusIndicator = document.getElementById('statusIndicator');
             if (data.status === 'active') {
                 statusIndicator.className = 'status-indicator status-active';
             } else {
                 statusIndicator.className = 'status-indicator status-inactive';
             }
+
+            // Location
+            document.getElementById('latitude').textContent = data.latitude.toFixed(6);
+            document.getElementById('longitude').textContent = data.longitude.toFixed(6);
+
+            // Flight data
+            document.getElementById('altitude').textContent = data.altitude.toFixed(1);
+            document.getElementById('speed').textContent = data.speed.toFixed(1);
+
+            // Heading
+            document.getElementById('heading').textContent = data.heading.toFixed(1);
+            document.getElementById('direction').textContent = getDirection(data.heading);
+
+            // Battery
+            const batteryLevel = data.battery_level;
+            document.getElementById('batteryLevel').textContent = batteryLevel.toFixed(1) + '%';
+            document.getElementById('batteryFill').style.width = batteryLevel + '%';
+
+            const batteryFill = document.getElementById('batteryFill');
+            batteryFill.classList.remove('battery-low', 'battery-medium');
+            if (batteryLevel < 20) {
+                batteryFill.classList.add('battery-low');
+            } else if (batteryLevel < 50) {
+                batteryFill.classList.add('battery-medium');
+            }
+
+            // Last update
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
         }
 
-        // Draw drone on canvas
-        function drawDrone(data) {
-            // Clear canvas
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Draw grid
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-            ctx.lineWidth = 1;
-            for (let i = 0; i <= 10; i++) {
-                const x = (canvas.width / 10) * i;
-                const y = (canvas.height / 10) * i;
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
-            }
-
-            // Convert lat/lon to canvas coordinates (0-100 range to canvas size)
-            const x = (data.longitude / 100) * canvas.width;
-            const y = canvas.height - (data.latitude / 100) * canvas.height; // Invert Y axis
-
-            // Draw trail effect
-            if (window.lastPosition) {
-                ctx.strokeStyle = 'rgba(0, 200, 255, 0.3)';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(window.lastPosition.x, window.lastPosition.y);
-                ctx.lineTo(x, y);
-                ctx.stroke();
-            }
-            window.lastPosition = { x, y };
-
-            // Draw drone
-            const droneSize = 20;
-
-            // Drone body (with heading indicator)
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate((data.heading * Math.PI) / 180);
-
-            // Main body
-            ctx.fillStyle = data.battery_level > 20 ? '#4CAF50' : '#f44336';
-            ctx.beginPath();
-            ctx.arc(0, 0, droneSize, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Direction indicator
-            ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.moveTo(0, -droneSize);
-            ctx.lineTo(-droneSize/3, 0);
-            ctx.lineTo(droneSize/3, 0);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.restore();
-
-            // Draw position label
-            ctx.fillStyle = '#fff';
-            ctx.font = '12px monospace';
-            ctx.fillText(`(${data.latitude.toFixed(1)}, ${data.longitude.toFixed(1)})`, x + 25, y - 10);
+        // Get compass direction from heading
+        function getDirection(heading) {
+            const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+                              'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+            const index = Math.round(heading / 22.5) % 16;
+            return directions[index];
         }
 
-        // Handle keyboard input
-        document.addEventListener('keydown', (event) => {
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
-                console.log('Not connected to server');
-                return;
-            }
+        // Update packet statistics
+        function updatePacketStats() {
+            packetCount++;
+            document.getElementById('packetCount').textContent = packetCount;
 
-            let command = null;
-
-            switch(event.key) {
-                case 'ArrowUp':
-                    command = 'up';
-                    event.preventDefault();
-                    break;
-                case 'ArrowDown':
-                    command = 'down';
-                    event.preventDefault();
-                    break;
-                case 'ArrowLeft':
-                    command = 'left';
-                    event.preventDefault();
-                    break;
-                case 'ArrowRight':
-                    command = 'right';
-                    event.preventDefault();
-                    break;
-                case 'r':
-                case 'R':
-                    command = 'recharge';
-                    event.preventDefault();
-                    break;
+            // Calculate update rate
+            const now = Date.now();
+            const timeDiff = (now - lastUpdateTime) / 1000;
+            if (timeDiff > 0) {
+                const rate = (1 / timeDiff).toFixed(2);
+                document.getElementById('updateRate').textContent = rate + ' Hz';
             }
-
-            if (command) {
-                console.log('Sending command:', command);
-                ws.send(JSON.stringify({ command: command }));
-            }
-        });
+            lastUpdateTime = now;
+        }
 
         // Initial connection
         connect();
-
-        // Draw initial empty canvas
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#fff';
-        ctx.font = '20px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('Waiting for drone connection...', canvas.width / 2, canvas.height / 2);
     </script>
 </body>
 </html>

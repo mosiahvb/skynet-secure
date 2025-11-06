@@ -5,9 +5,6 @@ Receives encrypted telemetry data from drone and provides web interface.
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-import asyncio
-import json
 from typing import Optional
 from encryption import SecureTransmission
 
@@ -39,7 +36,7 @@ async def drone_websocket(websocket: WebSocket):
 
     await websocket.accept()
     drone_connection = websocket
-    print("Drone connected!")
+    print("✓ Drone connected!")
 
     try:
         while True:
@@ -49,7 +46,8 @@ async def drone_websocket(websocket: WebSocket):
             # Decrypt telemetry
             try:
                 telemetry = encryption.decrypt_data(encrypted_data)
-                print(f"Telemetry received - Position: ({telemetry['latitude']:.2f}, {telemetry['longitude']:.2f}), "
+                print(f"📊 Telemetry - Pos: ({telemetry['latitude']:.2f}, {telemetry['longitude']:.2f}), "
+                      f"Alt: {telemetry['altitude']:.1f}m, "
                       f"Battery: {telemetry['battery_level']:.1f}%")
 
                 # Forward decrypted telemetry to all connected clients
@@ -58,7 +56,7 @@ async def drone_websocket(websocket: WebSocket):
                     try:
                         await client.send_json(telemetry)
                     except Exception as e:
-                        print(f"Error sending to client: {e}")
+                        print(f"❌ Error sending to client: {e}")
                         disconnected_clients.append(client)
 
                 # Remove disconnected clients
@@ -66,13 +64,13 @@ async def drone_websocket(websocket: WebSocket):
                     client_connections.remove(client)
 
             except Exception as e:
-                print(f"Error decrypting telemetry: {e}")
+                print(f"❌ Error decrypting telemetry: {e}")
 
     except WebSocketDisconnect:
-        print("Drone disconnected")
+        print("⚠️  Drone disconnected")
         drone_connection = None
     except Exception as e:
-        print(f"Drone connection error: {e}")
+        print(f"❌ Drone connection error: {e}")
         drone_connection = None
 
 
@@ -80,43 +78,25 @@ async def drone_websocket(websocket: WebSocket):
 async def client_websocket(websocket: WebSocket):
     """
     WebSocket endpoint for web client connection.
-    Receives commands from client and forwards encrypted commands to drone.
+    Streams telemetry data to connected web clients.
     """
     await websocket.accept()
     client_connections.append(websocket)
-    print(f"Client connected! Total clients: {len(client_connections)}")
+    print(f"✓ Web client connected! Total clients: {len(client_connections)}")
 
     try:
+        # Keep connection alive and wait for disconnect
         while True:
-            # Receive command from client
-            data = await websocket.receive_json()
-            command = data.get("command")
-
-            if command and drone_connection:
-                print(f"Command received from client: {command}")
-
-                # Encrypt command
-                encrypted_command = encryption.encrypt_command(command)
-
-                # Send encrypted command to drone
-                try:
-                    await drone_connection.send_bytes(encrypted_command)
-                    print(f"Encrypted command sent to drone: {command}")
-                except Exception as e:
-                    print(f"Error sending command to drone: {e}")
-                    await websocket.send_json({
-                        "error": "Failed to send command to drone"
-                    })
-            elif not drone_connection:
-                await websocket.send_json({
-                    "error": "Drone not connected"
-                })
+            # Just receive any messages but don't process them
+            # This keeps the WebSocket connection alive
+            await websocket.receive_text()
 
     except WebSocketDisconnect:
-        print("Client disconnected")
-        client_connections.remove(websocket)
+        print(f"⚠️  Web client disconnected. Remaining clients: {len(client_connections) - 1}")
+        if websocket in client_connections:
+            client_connections.remove(websocket)
     except Exception as e:
-        print(f"Client connection error: {e}")
+        print(f"❌ Client connection error: {e}")
         if websocket in client_connections:
             client_connections.remove(websocket)
 
@@ -134,13 +114,14 @@ async def health_check():
 @app.on_event("startup")
 async def startup_event():
     """Initialize on startup."""
+    print("\n" + "=" * 60)
+    print("🚁 SECURE DRONE TELEMETRY DASHBOARD")
     print("=" * 60)
-    print("Secure Drone Telemetry Dashboard")
-    print("=" * 60)
-    print("Server starting...")
-    print("Dashboard URL: http://localhost:8000")
-    print("Waiting for drone connection on ws://localhost:8000/ws/drone")
-    print("=" * 60)
+    print("📡 Server starting...")
+    print(f"🌐 Dashboard URL: http://localhost:8000")
+    print(f"🔌 Drone WebSocket: ws://localhost:8000/ws/drone")
+    print(f"🔒 Using encrypted telemetry transmission")
+    print("=" * 60 + "\n")
 
 
 if __name__ == "__main__":
