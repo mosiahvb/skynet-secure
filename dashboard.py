@@ -30,15 +30,69 @@ async def get_dashboard():
 async def drone_websocket(websocket: WebSocket):
     """
     WebSocket endpoint for drone connection.
-    Receives encrypted telemetry and forwards decrypted data to clients.
+    Performs mutual authentication before accepting telemetry.
     """
     global drone_connection
 
     await websocket.accept()
-    drone_connection = websocket
-    print("✓ Drone connected!")
+    print("🔌 Drone attempting to connect...")
 
     try:
+        # ===== MUTUAL AUTHENTICATION HANDSHAKE =====
+
+        # Step 1: Receive drone authentication token
+        drone_auth_token = await websocket.receive_text()
+        print("🔑 Received drone authentication token")
+
+        # Step 2: Verify drone identity
+        if not encryption.verify_auth_token(drone_auth_token, "drone", timeout=30):
+            print("❌ Drone authentication FAILED - Invalid token")
+            await websocket.send_text("AUTH_FAILED")
+            await websocket.close()
+            return
+
+        print("✓ Drone identity verified")
+
+        # Step 3: Send challenge to drone
+        challenge = encryption.generate_challenge()
+        await websocket.send_text(f"CHALLENGE:{challenge}")
+        print("🎯 Challenge sent to drone")
+
+        # Step 4: Receive challenge response from drone
+        challenge_response = await websocket.receive_text()
+
+        # Step 5: Verify challenge response
+        if not encryption.verify_challenge_response(challenge, challenge_response, "drone"):
+            print("❌ Drone authentication FAILED - Invalid challenge response")
+            await websocket.send_text("AUTH_FAILED")
+            await websocket.close()
+            return
+
+        print("✓ Drone challenge response verified")
+
+        # Step 6: Send API authentication token to drone
+        api_auth_token = encryption.generate_auth_token("api")
+        await websocket.send_text(f"API_TOKEN:{api_auth_token}")
+        print("🔑 API authentication token sent to drone")
+
+        # Step 7: Wait for drone to verify API and confirm
+        confirmation = await websocket.receive_text()
+        if confirmation != "AUTH_SUCCESS":
+            print("❌ Mutual authentication FAILED - Drone rejected API")
+            await websocket.close()
+            return
+
+        # Step 8: Confirm authentication success
+        await websocket.send_text("AUTH_SUCCESS")
+
+        print("=" * 60)
+        print("🔒 MUTUAL AUTHENTICATION SUCCESSFUL")
+        print("=" * 60)
+
+        drone_connection = websocket
+
+        # ===== AUTHENTICATED - BEGIN TELEMETRY TRANSMISSION =====
+
         while True:
             # Receive encrypted telemetry from drone
             encrypted_data = await websocket.receive_bytes()
@@ -120,7 +174,8 @@ async def startup_event():
     print("📡 Server starting...")
     print(f"🌐 Dashboard URL: http://localhost:8000")
     print(f"🔌 Drone WebSocket: ws://localhost:8000/ws/drone")
-    print(f"🔒 Using encrypted telemetry transmission")
+    print(f"🔒 Encryption: Fernet (AES-128)")
+    print(f"🔐 Authentication: HMAC-SHA256 mutual auth")
     print("=" * 60 + "\n")
 
 

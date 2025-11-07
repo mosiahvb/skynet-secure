@@ -5,19 +5,23 @@ A real-time telemetry monitoring system demonstrating secure network data transm
 ## 🎯 Overview
 
 This project showcases:
+- **Mutual authentication** between drone and API using HMAC-SHA256
 - **End-to-end encryption** of telemetry data during transmission
 - **Real-time data streaming** via WebSocket protocol
 - **Professional dashboard** interface for monitoring drone metrics
 - **Autonomous flight simulation** with realistic telemetry generation
 
-Perfect for demonstrating network telemetry concepts, secure data transmission, and real-time monitoring systems.
+Perfect for demonstrating network telemetry concepts, secure data transmission, authentication protocols, and real-time monitoring systems.
 
 ## ✨ Features
 
 ### Security
-- **Fernet Symmetric Encryption**: All telemetry data is encrypted before transmission
-- **Secure Key Management**: Automatic encryption key generation and storage
+- **Mutual Authentication**: HMAC-SHA256 based authentication ensuring drone and API verify each other's identity
+- **Challenge-Response Protocol**: Prevents replay attacks using time-based tokens and random challenges
+- **Fernet Symmetric Encryption**: All telemetry data is encrypted before transmission (AES-128)
+- **Secure Key Management**: Automatic encryption and authentication key generation
 - **Protected Data Flow**: No plaintext telemetry transmitted over the network
+- **Separate Key Files**: Distinct keys for encryption (`secret.key`) and authentication (`auth.key`)
 
 ### Real-time Monitoring
 - **Live Telemetry Display**: Updates every second with current drone data
@@ -37,10 +41,14 @@ Perfect for demonstrating network telemetry concepts, secure data transmission, 
 ### System Components
 
 ```
-┌─────────────────┐         Encrypted          ┌──────────────────┐
-│                 │        Telemetry           │                  │
-│  Drone Simulator│──────────────────────────>│  FastAPI Server  │
-│  (Autonomous)   │      WebSocket             │   (Dashboard)    │
+┌─────────────────┐                            ┌──────────────────┐
+│                 │   1. Mutual Auth           │                  │
+│  Drone Simulator│───────────────────────────>│  FastAPI Server  │
+│                 │   (HMAC-SHA256)            │   (Dashboard)    │
+│                 │                             │                  │
+│                 │   2. Encrypted Telemetry   │                  │
+│                 │───────────────────────────>│                  │
+│  (Autonomous)   │   (Fernet/AES-128)         │                  │
 │                 │                             │                  │
 └─────────────────┘                             └────────┬─────────┘
                                                          │
@@ -55,23 +63,29 @@ Perfect for demonstrating network telemetry concepts, secure data transmission, 
 
 ### Module Breakdown
 
-1. **`encryption.py`** - Encryption Module
-   - Implements Fernet symmetric encryption
-   - Manages encryption keys (auto-generates on first run)
-   - Encrypts outgoing telemetry data
-   - Decrypts incoming telemetry data
+1. **`encryption.py`** - Encryption & Authentication Module
+   - Implements Fernet symmetric encryption (AES-128)
+   - Implements HMAC-SHA256 authentication with challenge-response
+   - Manages encryption and authentication keys (auto-generates on first run)
+   - Generates and verifies authentication tokens with timestamps
+   - Prevents replay attacks through time-based validation
+   - Encrypts/decrypts telemetry data
 
 2. **`drone_simulator.py`** - Autonomous Drone Simulator
+   - Performs mutual authentication with API before transmitting data
+   - Verifies API identity using authentication tokens
    - Simulates realistic drone flight patterns
    - Generates telemetry data (GPS, altitude, speed, battery, heading)
    - Encrypts telemetry before transmission
-   - Maintains WebSocket connection to dashboard
+   - Maintains authenticated WebSocket connection to dashboard
    - Simulates battery drain over time
 
 3. **`dashboard.py`** - FastAPI Server
+   - Authenticates drone connections using HMAC-SHA256
+   - Implements challenge-response protocol for mutual verification
    - Serves web dashboard interface
-   - Manages WebSocket connections (drone and web clients)
-   - Decrypts incoming telemetry from drone
+   - Manages WebSocket connections (authenticated drone and web clients)
+   - Decrypts incoming telemetry from authenticated drone
    - Broadcasts telemetry to connected web clients
    - Provides health check endpoint
 
@@ -180,16 +194,49 @@ http://localhost:8000
 
 ## 🔒 Security Implementation
 
+### Mutual Authentication Flow
+
+Before any telemetry is transmitted, the drone and API perform a mutual authentication handshake:
+
+```
+Step 1: Drone → API
+  Sends authentication token (HMAC-SHA256 signed with timestamp)
+
+Step 2: API → Drone
+  Verifies drone token, sends random challenge
+
+Step 3: Drone → API
+  Responds to challenge (HMAC-SHA256 of challenge + identity)
+
+Step 4: API → Drone
+  Verifies challenge response, sends API authentication token
+
+Step 5: Drone → API
+  Verifies API token, sends confirmation
+
+Step 6: API → Drone
+  Sends final confirmation
+
+Result: Both parties verified, connection authenticated ✓
+```
+
+**Authentication Features:**
+- **HMAC-SHA256 Signatures**: Cryptographically secure message authentication
+- **Time-based Tokens**: Prevents replay attacks (30-second validity window)
+- **Challenge-Response**: Proves both parties possess the shared authentication key
+- **Mutual Verification**: Both drone AND API verify each other's identity
+- **Separate Auth Key**: Authentication uses `auth.key`, distinct from encryption key
+
 ### Encryption Flow
 
 1. **Key Generation** (First Run):
    ```
-   - System generates Fernet encryption key
-   - Key saved to secret.key file
-   - Both drone and dashboard use same key
+   - System generates Fernet encryption key → secret.key
+   - System generates authentication key → auth.key
+   - Both drone and dashboard use same keys
    ```
 
-2. **Telemetry Transmission**:
+2. **Telemetry Transmission** (After Authentication):
    ```
    Drone → Encrypt telemetry → Send via WebSocket → Dashboard receives
    ```
@@ -201,8 +248,12 @@ http://localhost:8000
 
 ### Security Features
 
-- **AES-128 Encryption**: Industry-standard symmetric encryption
-- **Shared Secret**: Both components use the same encryption key
+- **Mutual Authentication**: Both drone and API verify each other before data exchange
+- **HMAC-SHA256**: Cryptographic authentication preventing token forgery
+- **Replay Attack Protection**: Time-based tokens with 30-second validity
+- **AES-128 Encryption**: Industry-standard symmetric encryption for telemetry
+- **Dual Key System**: Separate keys for authentication and encryption
+- **Challenge-Response**: Prevents man-in-the-middle attacks
 - **Data Integrity**: Encryption prevents tampering during transmission
 - **Automatic Key Management**: No manual configuration required
 
@@ -210,11 +261,12 @@ http://localhost:8000
 
 ```
 telemetry_dashboard/
-├── dashboard.py              # FastAPI server & WebSocket manager
-├── drone_simulator.py        # Autonomous drone with telemetry generation
-├── encryption.py             # Fernet encryption implementation
+├── dashboard.py              # FastAPI server with authentication
+├── drone_simulator.py        # Autonomous drone with authentication
+├── encryption.py             # Encryption & authentication module
 ├── requirements.txt          # Python dependencies
 ├── secret.key               # Encryption key (auto-generated, gitignored)
+├── auth.key                 # Authentication key (auto-generated, gitignored)
 ├── .gitignore               # Git ignore rules
 ├── static/
 │   └── index.html           # Professional dashboard interface
@@ -226,19 +278,50 @@ telemetry_dashboard/
 - **Backend**: Python 3.8+
 - **Web Framework**: FastAPI
 - **WebSocket**: Real-time bidirectional communication
+- **Authentication**: HMAC-SHA256 with challenge-response protocol
 - **Encryption**: Cryptography library (Fernet/AES-128)
 - **Server**: Uvicorn ASGI server
-- **Frontend**: HTML5, CSS3 (Glass morphism design), Vanilla JavaScript
+- **Frontend**: HTML5, CSS3 (Grayscale theme), Vanilla JavaScript
 
 ## 🧪 Testing & Verification
 
-### Verify Encrypted Transmission
+### Verify Mutual Authentication
 
-Watch the terminal outputs to confirm encryption:
+Watch the terminal outputs to confirm the authentication handshake:
 
 **Dashboard Terminal**:
 ```
-✓ Drone connected!
+🔌 Drone attempting to connect...
+🔑 Received drone authentication token
+✓ Drone identity verified
+🎯 Challenge sent to drone
+✓ Drone challenge response verified
+🔑 API authentication token sent to drone
+============================================================
+🔒 MUTUAL AUTHENTICATION SUCCESSFUL
+============================================================
+```
+
+**Drone Simulator Terminal**:
+```
+🔌 Connected to dashboard WebSocket
+🔑 Sent drone authentication token
+🎯 Received challenge from API
+✓ Sent challenge response
+🔑 Received API authentication token
+✓ API identity verified
+✓ Sent authentication confirmation
+============================================================
+🔒 MUTUAL AUTHENTICATION SUCCESSFUL
+============================================================
+```
+
+### Verify Encrypted Transmission
+
+After authentication, watch the telemetry flow:
+
+**Dashboard Terminal**:
+```
 📊 Telemetry - Pos: (52.00, 48.00), Alt: 25.3m, Battery: 98.5%
 ```
 
@@ -275,13 +358,16 @@ The drone's battery drains at **0.03% per second**:
 
 This project demonstrates key concepts in:
 
-1. **Network Telemetry**: Real-world pattern for transmitting sensor data
-2. **Encryption in Transit**: Protecting data during network transmission
-3. **WebSocket Protocol**: Efficient real-time communication
-4. **Asynchronous Programming**: Python async/await patterns
-5. **Client-Server Architecture**: Clean separation of concerns
-6. **Real-time Visualization**: Live data display techniques
-7. **Professional UI/UX**: Modern dashboard design patterns
+1. **Mutual Authentication**: HMAC-based authentication ensuring both parties verify each other
+2. **Challenge-Response Protocol**: Preventing replay attacks and verifying identity
+3. **Network Telemetry**: Real-world pattern for transmitting sensor data
+4. **Encryption in Transit**: Protecting data during network transmission (Fernet/AES-128)
+5. **WebSocket Protocol**: Efficient real-time bidirectional communication
+6. **Asynchronous Programming**: Python async/await patterns for concurrent operations
+7. **Cryptographic Security**: HMAC-SHA256 signatures and time-based token validation
+8. **Client-Server Architecture**: Clean separation of concerns with security layers
+9. **Real-time Visualization**: Live data display techniques
+10. **Professional UI/UX**: Modern dashboard design patterns
 
 ## 🎯 Use Cases
 

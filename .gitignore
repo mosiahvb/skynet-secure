@@ -35,5 +35,6 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Security - encryption keys
+# Security - encryption and authentication keys
 secret.key
+auth.key

@@ -121,8 +121,76 @@ class DroneSimulator:
         while self.running:
             try:
                 async with connect(server_url) as websocket:
-                    print("✓ Connected to dashboard!")
+                    print("🔌 Connected to dashboard WebSocket")
+
+                    # ===== MUTUAL AUTHENTICATION HANDSHAKE =====
+
+                    # Step 1: Send drone authentication token
+                    drone_auth_token = self.encryption.generate_auth_token("drone")
+                    await websocket.send(drone_auth_token)
+                    print("🔑 Sent drone authentication token")
+
+                    # Step 2: Receive and process challenge
+                    challenge_msg = await websocket.recv()
+                    if challenge_msg == "AUTH_FAILED":
+                        print("❌ Authentication FAILED - API rejected drone token")
+                        await websocket.close()
+                        return
+
+                    if not challenge_msg.startswith("CHALLENGE:"):
+                        print("❌ Authentication FAILED - Invalid response from API")
+                        await websocket.close()
+                        return
+
+                    challenge = challenge_msg.split(":", 1)[1]
+                    print("🎯 Received challenge from API")
+
+                    # Step 3: Send challenge response
+                    challenge_response = self.encryption.generate_challenge_response(challenge, "drone")
+                    await websocket.send(challenge_response)
+                    print("✓ Sent challenge response")
+
+                    # Step 4: Receive API authentication token
+                    api_token_msg = await websocket.recv()
+                    if api_token_msg == "AUTH_FAILED":
+                        print("❌ Authentication FAILED - Challenge response rejected")
+                        await websocket.close()
+                        return
+
+                    if not api_token_msg.startswith("API_TOKEN:"):
+                        print("❌ Authentication FAILED - Invalid API response")
+                        await websocket.close()
+                        return
+
+                    api_auth_token = api_token_msg.split(":", 1)[1]
+                    print("🔑 Received API authentication token")
+
+                    # Step 5: Verify API identity
+                    if not self.encryption.verify_auth_token(api_auth_token, "api", timeout=30):
+                        print("❌ Authentication FAILED - Invalid API token")
+                        await websocket.send("AUTH_FAILED")
+                        await websocket.close()
+                        return
+
+                    print("✓ API identity verified")
+
+                    # Step 6: Confirm authentication success
+                    await websocket.send("AUTH_SUCCESS")
+                    print("✓ Sent authentication confirmation")
+
+                    # Step 7: Wait for final confirmation
+                    final_confirmation = await websocket.recv()
+                    if final_confirmation != "AUTH_SUCCESS":
+                        print("❌ Authentication FAILED - No final confirmation")
+                        await websocket.close()
+                        return
+
+                    print("=" * 60)
+                    print("🔒 MUTUAL AUTHENTICATION SUCCESSFUL")
+                    print("=" * 60)
                     print("Transmitting encrypted telemetry data...\n")
+
+                    # ===== AUTHENTICATED - BEGIN TELEMETRY TRANSMISSION =====
 
                     while self.running:
                         try:
