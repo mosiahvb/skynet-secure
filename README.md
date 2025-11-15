@@ -1,8 +1,8 @@
-# 🚁 Secure Drone Telemetry Dashboard
+# Secure Drone Telemetry Dashboard
 
 A real-time telemetry monitoring system demonstrating secure network data transmission using Python, FastAPI, and WebSockets. This project features an autonomous drone simulator that transmits encrypted telemetry data to a professional web-based dashboard for live monitoring and analysis.
 
-## 🎯 Overview
+## Overview
 
 This project showcases:
 - **Mutual authentication** between drone and API using HMAC-SHA256
@@ -13,7 +13,7 @@ This project showcases:
 
 Perfect for demonstrating network telemetry concepts, secure data transmission, authentication protocols, and real-time monitoring systems.
 
-## ✨ Features
+## Features
 
 ### Security
 - **Mutual Authentication**: HMAC-SHA256 based authentication ensuring drone and API verify each other's identity
@@ -36,7 +36,7 @@ Perfect for demonstrating network telemetry concepts, secure data transmission, 
 - **System Status**: Operational status monitoring
 - **Compass Direction**: Cardinal direction display (N, S, E, W, etc.)
 
-## 🏗️ Architecture
+## Architecture
 
 ### System Components
 
@@ -96,7 +96,7 @@ Perfect for demonstrating network telemetry concepts, secure data transmission, 
    - Session statistics (update rate, packet count)
    - Mobile-friendly layout
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -122,7 +122,7 @@ You need **two separate terminal windows**:
 #### Terminal 1: Start the Dashboard Server
 
 ```bash
-python dashboard.py
+python3 dashboard.py
 ```
 
 You should see:
@@ -140,7 +140,7 @@ You should see:
 #### Terminal 2: Start the Drone Simulator
 
 ```bash
-python drone_simulator.py
+python3 drone_simulator.py
 ```
 
 You should see:
@@ -164,35 +164,35 @@ Open your web browser and navigate to:
 http://localhost:8000
 ```
 
-## 📊 Dashboard Panels
+## Dashboard Panels
 
-### 📊 System Status
+### System Status
 - **Drone Status**: Current operational state (ACTIVE/BATTERY_DEPLETED)
 - **Battery Level**: Visual battery indicator with color coding
   - Green: > 50%
   - Orange: 20-50%
   - Red: < 20%
 
-### 📍 Location Data
+### Location Data
 - **Latitude**: GPS latitude coordinate (decimal degrees)
 - **Longitude**: GPS longitude coordinate (decimal degrees)
 
-### ✈️ Flight Data
+### Flight Data
 - **Altitude**: Current height above ground (meters)
 - **Speed**: Current velocity (meters per second)
 
-### 🧭 Navigation
+### Navigation
 - **Heading**: Direction in degrees (0-360°)
 - **Direction**: Cardinal compass direction (N, NE, E, SE, S, SW, W, NW)
 
-### ℹ️ Session Information
+### Session Information
 - **Connection Type**: WebSocket (Encrypted)
 - **Encryption Protocol**: Fernet (AES-128)
 - **Update Rate**: Telemetry updates per second (Hz)
 - **Data Packets Received**: Total packet count
 - **Last Update**: Timestamp of most recent data
 
-## 🔒 Security Implementation
+## Security Implementation
 
 ### Mutual Authentication Flow
 
@@ -257,23 +257,8 @@ Result: Both parties verified, connection authenticated ✓
 - **Data Integrity**: Encryption prevents tampering during transmission
 - **Automatic Key Management**: No manual configuration required
 
-## 📁 Project Structure
 
-```
-telemetry_dashboard/
-├── dashboard.py              # FastAPI server with authentication
-├── drone_simulator.py        # Autonomous drone with authentication
-├── encryption.py             # Encryption & authentication module
-├── requirements.txt          # Python dependencies
-├── secret.key               # Encryption key (auto-generated, gitignored)
-├── auth.key                 # Authentication key (auto-generated, gitignored)
-├── .gitignore               # Git ignore rules
-├── static/
-│   └── index.html           # Professional dashboard interface
-└── README.md                # This file
-```
-
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Backend**: Python 3.8+
 - **Web Framework**: FastAPI
@@ -281,9 +266,9 @@ telemetry_dashboard/
 - **Authentication**: HMAC-SHA256 with challenge-response protocol
 - **Encryption**: Cryptography library (Fernet/AES-128)
 - **Server**: Uvicorn ASGI server
-- **Frontend**: HTML5, CSS3 (Grayscale theme), Vanilla JavaScript
+- **Frontend**: HTML, CSS, Vanilla JavaScript
 
-## 🧪 Testing & Verification
+## Testing & Verification
 
 ### Verify Mutual Authentication
 
@@ -354,7 +339,7 @@ The drone's battery drains at **0.03% per second**:
 - When battery reaches 0%, status changes to "BATTERY_DEPLETED"
 - Speed drops to 0 when depleted
 
-## 🎓 Educational Value
+## Educational Value
 
 This project demonstrates key concepts in:
 
@@ -369,7 +354,7 @@ This project demonstrates key concepts in:
 9. **Real-time Visualization**: Live data display techniques
 10. **Professional UI/UX**: Modern dashboard design patterns
 
-## 🎯 Use Cases
+## Use Cases
 
 - **Educational**: Learn about secure network communication
 - **Portfolio**: Demonstrate full-stack development skills
@@ -377,59 +362,16 @@ This project demonstrates key concepts in:
 - **Training**: Practice WebSocket and encryption concepts
 - **Demo**: Showcase real-time data transmission
 
-## 🔧 Troubleshooting
-
-### Connection Issues
-
-**Problem**: Drone can't connect to dashboard
-- **Solution**: Ensure dashboard is running first, then start drone
-
-**Problem**: Web dashboard shows "Disconnected"
-- **Solution**: Check that both dashboard and drone are running
-- **Solution**: Refresh browser page
-
-### Port Conflicts
-
-**Problem**: Port 8000 already in use
-- **Solution**: Stop other services using port 8000
-- **Solution**: Modify `dashboard.py` to use different port:
-  ```python
-  uvicorn.run(app, host="0.0.0.0", port=8001)
-  ```
-
-### Encryption Errors
-
-**Problem**: "Error decrypting telemetry"
-- **Solution**: Delete `secret.key` and restart both components
-- Both drone and dashboard must use the same key
-
-## 📝 Future Enhancements
+## Future Enhancements
 
 Potential improvements for extended functionality:
 
-- [ ] Multiple drone support with unique identifiers
-- [ ] Telemetry data logging to database (SQLite/PostgreSQL)
-- [ ] Historical data visualization with charts
-- [ ] Alert system for low battery or anomalies
-- [ ] Export telemetry data (CSV, JSON)
-- [ ] Authentication for dashboard access
-- [ ] HTTPS/WSS support for production deployment
-- [ ] Configurable flight patterns
-- [ ] 3D visualization of drone position
-- [ ] REST API for programmatic access
-
-## 🤝 Contributing
-
-This is a portfolio/educational project. Feedback and suggestions are welcome!
-
-## 📄 License
-
-This project is open source and available for educational purposes.
-
-## 👤 Author
-
-Created to demonstrate secure network telemetry, real-time data transmission, and professional dashboard development.
-
+- Multiple drone support with unique identifiers
+- Export telemetry data (CSV, JSON)
+- Authentication for dashboard access
+- HTTPS/WSS support for production deployment
+- Configurable flight patterns
+- 3D visualization of drone position
 ---
 
 **Note**: This is a simulation for educational and demonstration purposes. The encryption implementation is suitable for learning but should be reviewed and hardened for production use cases.
